@@ -6,16 +6,17 @@ import javax.persistence.*;
 import java.util.*;
 
 @Entity
-@Table(name = "TRAINING")
 public class Training {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long trainingId;
-    private Long userId;
-    @OneToMany(mappedBy = "training")
+    @ManyToOne
+    @JoinColumn(name = "user", nullable = false)
+    private User user;
+    @OneToMany(mappedBy = "conditionTraining")
     private Set<Condition> conditionActivities = new HashSet<>();
-    @OneToMany(mappedBy = "training")
+    @OneToMany(mappedBy = "strengthTraining")
     private Set<Strength> strengthActivities = new HashSet<>();
     private Date date;
     private TrainingType type;
@@ -24,8 +25,7 @@ public class Training {
 
     }
 
-    public Training(Long userId, Date date, TrainingType type) {
-        this.userId = userId;
+    public Training(Date date, TrainingType type) {
         this.date = date;
         this.type = type;
     }
@@ -34,7 +34,6 @@ public class Training {
     public String toString() {
         return "Training{" +
                 "trainingId=" + trainingId +
-                ", userId=" + userId +
                 ", conditionActivities=" + conditionActivities +
                 ", strengthActivities=" + strengthActivities +
                 ", date=" + date +
@@ -50,12 +49,12 @@ public class Training {
         this.trainingId = trainingId;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Set<Condition> getConditionActivities() {

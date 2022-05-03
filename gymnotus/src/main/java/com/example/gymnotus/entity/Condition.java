@@ -5,14 +5,14 @@ import com.example.gymnotus.enums.ConditionType;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "CONDITION")
 public class Condition {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long conditionActivityId;
     @ManyToOne
-    private Training training;
+    @JoinColumn(name = "training_id", nullable = false)
+    private Training conditionTraining;
     private ConditionType conditionType;
     private int time;
     private int distance;
@@ -62,18 +62,18 @@ public class Condition {
     }
 
     public Long getId() {
-        return id;
+        return conditionActivityId;
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.conditionActivityId = id;
     }
 
     public Training getTraining() {
-        return training;
+        return conditionTraining;
     }
 
-    public void setTraining(Training training) {
-        this.training = training;
+    public void setTraining(Training conditionTraining) {
+        this.conditionTraining = conditionTraining;
     }
 }

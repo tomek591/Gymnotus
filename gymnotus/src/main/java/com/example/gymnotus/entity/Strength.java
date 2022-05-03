@@ -3,14 +3,14 @@ package com.example.gymnotus.entity;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "STRENGTH")
 public class Strength{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long strengthActivityId;
     @ManyToOne
-    private Training training;
+    @JoinColumn(name = "training_id", nullable = false)
+    private Training strengthTraining;
     private int reps;
     private int series;
     private int weight;
@@ -21,11 +21,12 @@ public class Strength{
 
     }
 
-    public Strength(int reps, int series, int weight, int seconds) {
+    public Strength(int reps, int series, int weight, int seconds, String notes) {
         this.reps = reps;
         this.series = series;
         this.weight = weight;
         this.seconds = seconds;
+        this.notes = notes;
     }
 
     public Long getStrengthActivityId() {
@@ -77,10 +78,10 @@ public class Strength{
     }
 
     public Training getTraining() {
-        return training;
+        return strengthTraining;
     }
 
-    public void setTraining(Training training) {
-        this.training = training;
+    public void setTraining(Training strengthTraining) {
+        this.strengthTraining = strengthTraining;
     }
 }
