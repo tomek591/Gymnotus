@@ -19,8 +19,8 @@ public class User {
     private String username;
     private GenderType genderType;
     private Date birthDate;
-    private int height;
-    private int weight;
+    private Integer height;
+    private Integer weight;
     private LocalDateTime created;
     @OneToMany
     @JoinColumn(name = "userId", updatable = false, insertable = false)

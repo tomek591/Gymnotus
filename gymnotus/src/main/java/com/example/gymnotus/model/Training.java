@@ -4,11 +4,9 @@ import com.example.gymnotus.enums.TrainingType;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -20,4 +18,10 @@ public class Training {
     private long userId;
     private TrainingType trainingType;
     private LocalDateTime created;
+    @OneToMany
+    @JoinColumn(name = "trainingId", updatable = false, insertable = false)
+    private List<Strength> strengthTrainings;
+    @OneToMany
+    @JoinColumn(name = "trainingId", updatable = false, insertable = false)
+    private List<Condition> conditionTrainings;
 }

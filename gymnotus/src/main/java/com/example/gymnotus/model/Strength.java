@@ -1,25 +1,20 @@
 package com.example.gymnotus.model;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 
 @Getter
 @Setter
 @Entity
-public class Strength {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    private long trainingId;
+@SuperBuilder
+@NoArgsConstructor
+public class Strength extends Exercise {
     private String name;
     private int reps;
     private int series;
     private int weight;
-    private int timeInSeconds;
-    private String shortNotes;
 }
