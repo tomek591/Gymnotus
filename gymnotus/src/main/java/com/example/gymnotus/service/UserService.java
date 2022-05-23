@@ -4,7 +4,6 @@ import com.example.gymnotus.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.example.gymnotus.repository.UserRepository;
-
 import javax.transaction.Transactional;
 
 @Service
@@ -26,9 +25,11 @@ public class UserService {
     public User editUser(User user) {
             User userFromDb  = userRepository.findById(user.getId())
                     .orElseThrow();
+            userFromDb.setGenderType(user.getGenderType());
             userFromDb.setBirthDate(user.getBirthDate());
             userFromDb.setHeight(user.getHeight());
             userFromDb.setWeight(user.getWeight());
+            userRepository.save(userFromDb);
             return userFromDb;
     }
 
