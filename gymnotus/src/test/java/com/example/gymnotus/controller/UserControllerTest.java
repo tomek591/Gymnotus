@@ -7,25 +7,31 @@ import com.example.gymnotus.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import javax.transaction.Transactional;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(UserController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@EnableWebMvc
 class UserControllerTest {
 
-    @MockBean
+    @Autowired
     UserService userService;
 
-    @MockBean
+    @Autowired
     UserRepository userRepository;
 
     @Autowired
@@ -35,67 +41,160 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
+    @Transactional
     void getUser_whenCorrectRequest_thenValuesMatched() throws Exception {
-        long id = 1L;
-        User user = new User();
-        user.setUsername("test");
-        user.setGenderType(GenderType.MALE);
-        user.setHeight(180.0);
-        user.setWeight(100.0);
-        when(userService.getUser(id)).thenReturn(user);
-        mockMvc.perform(get("/users/{id}", id)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value(user.getUsername()))
-                .andExpect(jsonPath("$.genderType").value(user.getGenderType().toString()))
-                .andExpect(jsonPath("$.height").value(user.getHeight()))
-                .andExpect(jsonPath("$.weight").value(user.getWeight()))
-                .andDo(print());
+        User newUser = new User();
+        newUser.setUsername("testers123");
+        newUser.setGenderType(GenderType.MALE);
+        newUser.setBirthDate(new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09"));
+        newUser.setHeight(180.0);
+        newUser.setWeight(100.0);
+        userRepository.save(newUser);
+
+        MvcResult mvcResult = mockMvc.perform(get("/users/{id}", newUser.getId()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        User user  = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), User.class);
+        assertThat(user).isNotNull();
+        assertThat(user.getId()).isEqualTo(newUser.getId());
+        assertThat(user.getUsername()).isEqualTo("testers123");
+        assertThat(user.getGenderType()).isEqualTo(GenderType.MALE);
+        assertThat(user.getBirthDate()).isEqualTo(new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09"));
+        assertThat(user.getHeight()).isEqualTo(180.0);
+        assertThat(user.getWeight()).isEqualTo(100.0);
     }
+
+
 
     @Test
     void getUser_whenPathVariableTypeIsNoteCorrect_then400() throws Exception {
-        mockMvc.perform(get("/users/anyString")).andExpect(status().is4xxClientError());
+        mockMvc.perform(get("/users/anyString")).andExpect(status().isBadRequest());
     }
 
     @Test
-    void addUser_whenCorrectRequest_then200() throws Exception {
-        Map<String,Object> body = new HashMap<>();
-        body.put("username","user23");
-        body.put("genderType", "MALE");
-        body.put("birthDate","2022-05-17");
-        body.put("height","180");
-        body.put("weight","100");
-        body.put("created","2022-05-17T11:10:09.986Z");
-
-        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isCreated())
-                .andDo(print());
+    void getUser_whenIdNotExistsInDb_then404() throws Exception {
+        mockMvc.perform(get("/users/100000000")).andExpect(status().isNotFound());
     }
+
+    @Test
+    @Transactional
+    void addUser_whenCorrectRequest_then201() throws Exception {
+        User newUser = new User();
+        newUser.setUsername("testers12345");
+        newUser.setGenderType(GenderType.FEMALE);
+        newUser.setBirthDate(new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09"));
+        newUser.setHeight(180.0);
+        newUser.setWeight(100.0);
+
+        MvcResult mvcResult = mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newUser)))
+                .andExpect(status().isCreated())
+                .andDo(print())
+                .andReturn();
+
+        User user  = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), User.class);
+        assertThat(user).isNotNull();
+        assertThat(user.getUsername()).isEqualTo("testers12345");
+        assertThat(user.getGenderType()).isEqualTo(GenderType.FEMALE);
+        assertThat(user.getBirthDate()).isEqualTo(new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09"));
+        assertThat(user.getHeight()).isEqualTo(180.0);
+        assertThat(user.getWeight()).isEqualTo(100.0);
+    }
+
     @Test
     void addUser_whenRequestWithoutUsername_then400() throws Exception {
-        Map<String,Object> body = new HashMap<>();
+        User newUser = new User();
+        newUser.setGenderType(GenderType.FEMALE);
+        newUser.setBirthDate(new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09"));
+        newUser.setHeight(180.0);
+        newUser.setWeight(100.0);
 
-        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(body)))
+        MvcResult mvcResult = mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newUser)))
                 .andExpect(status().isBadRequest())
-                .andDo(print());
+                .andDo(print())
+                .andReturn();
     }
 
     @Test
     void addUser_whenRequestWithWrongUsernameLength_then400() throws Exception {
-        Map<String,Object> body = new HashMap<>();
-        body.put("username", "a");
+        User newUser = new User();
+        newUser.setUsername("test");
+        newUser.setGenderType(GenderType.FEMALE);
+        newUser.setBirthDate(new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09"));
+        newUser.setHeight(180.0);
+        newUser.setWeight(100.0);
 
-        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+        MvcResult mvcResult = mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newUser)))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andReturn();
+    }
+
+    @Test
+    void addUser_whenRequestWithExistsUsername_then400() throws Exception {
+        User newUser = new User();
+        newUser.setUsername("tester123");
+        newUser.setGenderType(GenderType.FEMALE);
+        newUser.setHeight(180.0);
+        newUser.setWeight(100.0);
+
+        MvcResult mvcResult = mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newUser)))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andReturn();
+    }
+
+    @Test
+    void addUser_whenWrongInputsTypeInRequest_then400() throws Exception {
+        Map<String,Object> body = new HashMap<>();
+        body.put("username", "test123ers");
+        body.put("genderType", "Female");
+        body.put("height","170");
+        body.put("weight","110");
+
+        mockMvc.perform(put("/users").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isBadRequest())
                 .andDo(print());
     }
 
     @Test
+    @Transactional
     void updateUser_whenCorrectRequest_then200() throws Exception {
+        User updatedUser = new User();
+        updatedUser.setId(1L);
+        updatedUser.setUsername("test123");
+        updatedUser.setGenderType(GenderType.MALE);
+        updatedUser.setBirthDate(new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09"));
+        updatedUser.setWeight(70.0);
+        updatedUser.setHeight(180.0);
+
+
+        MvcResult mvcResult = mockMvc.perform(put("/users").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedUser)))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        User user  = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), User.class);
+        assertThat(user).isNotNull();
+        assertThat(user.getUsername()).isEqualTo("test123");
+        assertThat(user.getGenderType()).isEqualTo(GenderType.MALE);
+        assertThat(user.getBirthDate()).isEqualTo(new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09"));
+        assertThat(user.getWeight()).isEqualTo(70.0);
+        assertThat(user.getHeight()).isEqualTo(180.0);
+    }
+
+    @Test
+    @Transactional
+    void updateUser_whenTryUpdateNotExistsUser_then404() throws Exception {
         Map<String,Object> body = new HashMap<>();
-        body.put("id", "1");
+        body.put("id", "1000000");
         body.put("username", "test123");
         body.put("genderType", "FEMALE");
         body.put("height","170.0");
@@ -103,12 +202,12 @@ class UserControllerTest {
 
         mockMvc.perform(put("/users").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isOk())
+                .andExpect(status().isNotFound())
                 .andDo(print());
     }
 
     @Test
-    void updateUser_whenWrongInputInRequest_then400() throws Exception {
+    void updateUser_whenWrongInputsTypeInRequest_then400() throws Exception {
         Map<String,Object> body = new HashMap<>();
         body.put("id", "1");
         body.put("username", "test123");
@@ -123,17 +222,19 @@ class UserControllerTest {
     }
 
     @Test
-    void deleteUser_whenCorrectRequest_then204() throws Exception {
-        long id = 1L;
-        doNothing().when(userService).deleteUser(id);
-        mockMvc.perform(delete("/users/{id}", id))
+    @Transactional
+    void deleteUser_whenCorrectRequest_then200() throws Exception {
+        User newUser = new User();
+        newUser.setUsername("testers123");
+        newUser.setGenderType(GenderType.MALE);
+        newUser.setBirthDate(new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09"));
+        newUser.setHeight(180.0);
+        newUser.setWeight(100.0);
+        userRepository.save(newUser);
+
+        MvcResult mvcResult = mockMvc.perform(delete("/users/{id}", newUser.getId()))
+                .andDo(print())
                 .andExpect(status().isNoContent())
-                .andDo(print());
+                .andReturn();
     }
-
-    @Test
-    void deleteUser_whenPathVariableTypeIsNoteCorrect_then400() throws Exception {
-        mockMvc.perform(delete("/users/anyString")).andExpect(status().is4xxClientError());
-    }
-
 }
