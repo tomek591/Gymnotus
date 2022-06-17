@@ -12,7 +12,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public User getUser(long id) {
+    public User getUser(Long id) {
         return userRepository.findById(id)
                 .orElseThrow();
     }
@@ -22,18 +22,17 @@ public class UserService {
     }
 
     @Transactional
-    public User editUser(User user) {
-            User userFromDb  = userRepository.findById(user.getId())
+    public User editUser(Long id, User user) {
+            User userFromDb  = userRepository.findById(id)
                     .orElseThrow();
             userFromDb.setGenderType(user.getGenderType());
             userFromDb.setBirthDate(user.getBirthDate());
             userFromDb.setHeight(user.getHeight());
             userFromDb.setWeight(user.getWeight());
-            userRepository.save(userFromDb);
             return userFromDb;
     }
 
-    public void deleteUser(long id) {
+    public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
 }

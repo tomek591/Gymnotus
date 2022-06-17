@@ -157,7 +157,7 @@ class UserControllerTest {
         body.put("height","170");
         body.put("weight","110");
 
-        mockMvc.perform(put("/users").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isBadRequest())
                 .andDo(print());
@@ -175,7 +175,7 @@ class UserControllerTest {
         updatedUser.setHeight(180.0);
 
 
-        MvcResult mvcResult = mockMvc.perform(put("/users").contentType(MediaType.APPLICATION_JSON)
+        MvcResult mvcResult = mockMvc.perform(put("/users/1").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedUser)))
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -200,7 +200,7 @@ class UserControllerTest {
         body.put("height","170.0");
         body.put("weight","110.0");
 
-        mockMvc.perform(put("/users").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/users/1000000").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isNotFound())
                 .andDo(print());
@@ -215,7 +215,7 @@ class UserControllerTest {
         body.put("height","170");
         body.put("weight","110");
 
-        mockMvc.perform(put("/users").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/users/1").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isBadRequest())
                 .andDo(print());

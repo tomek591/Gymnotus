@@ -78,10 +78,8 @@ class UserServiceTest {
         user.setWeight(100.0);
 
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(userRepository.save(user)).thenReturn(user);
-        userService.editUser(user);
+        userService.editUser(1L, user);
         verify(userRepository, times(1)).findById(user.getId());
-        verify(userRepository, times(1)).save(user);
     }
 
     @Test
@@ -98,7 +96,7 @@ class UserServiceTest {
     }
 
     @Test
-    void deleteUser_correctCase_shouldDelete() throws ParseException {
+    void deleteUser_correctCase_shouldDelete() {
         User user = new User();
         user.setId(1L);
         userService.deleteUser(user.getId());
