@@ -15,7 +15,7 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @Entity
 @Table(name = "cond")
-public class Condition extends Exercise {
+public class Endurance extends Exercise {
     private ConditionType conditionType;
     private int distanceInMeters;
 }
