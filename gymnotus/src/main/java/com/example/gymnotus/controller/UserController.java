@@ -1,6 +1,7 @@
 package com.example.gymnotus.controller;
 
 import com.example.gymnotus.controller.dto.UserDtoRequest;
+import com.example.gymnotus.controller.dto.UserDtoRequestForPut;
 import com.example.gymnotus.controller.dto.UserDtoResponse;
 import com.example.gymnotus.model.User;
 import com.example.gymnotus.service.UserService;
@@ -43,12 +44,12 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    public User editUser(@PathVariable Long id, @Valid @RequestBody UserDtoRequest userDtoRequest) {
+    public User editUser(@PathVariable Long id, @Valid @RequestBody UserDtoRequestForPut userDtoRequestForPut) {
         User user = new User();
-        user.setGenderType(userDtoRequest.genderType());
-        user.setBirthDate(userDtoRequest.birthDate());
-        user.setHeight(userDtoRequest.height());
-        user.setWeight(userDtoRequest.weight());
+        user.setGenderType(userDtoRequestForPut.genderType());
+        user.setBirthDate(userDtoRequestForPut.birthDate());
+        user.setHeight(userDtoRequestForPut.height());
+        user.setWeight(userDtoRequestForPut.weight());
         return userService.editUser(id, user);
     }
 
