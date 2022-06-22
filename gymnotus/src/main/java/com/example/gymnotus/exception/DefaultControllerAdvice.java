@@ -1,6 +1,7 @@
 package com.example.gymnotus.exception;
 
 import com.example.gymnotus.controller.UserController;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -12,9 +13,14 @@ import java.util.NoSuchElementException;
 @ControllerAdvice(assignableTypes = UserController.class)
 public class DefaultControllerAdvice {
 
-    @ExceptionHandler(NoSuchElementException.class)
+    @ExceptionHandler({NoSuchElementException.class})
     public ResponseEntity<String> handleNoSuchElementException() {
-        return new ResponseEntity<>("No value is present in DB, please change your request.", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("Value is not present in DB, please change your request.", HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler({EmptyResultDataAccessException.class})
+    public ResponseEntity<String> handleEmptyResultDataAccessException() {
+        return new ResponseEntity<>("Value is not present in DB, please change your request.", HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

@@ -1,8 +1,9 @@
 package com.example.gymnotus.controller;
 
-import com.example.gymnotus.controller.dto.UserDtoRequest;
-import com.example.gymnotus.controller.dto.UserDtoRequestForPut;
-import com.example.gymnotus.controller.dto.UserDtoResponse;
+import com.example.gymnotus.controller.dto.user_dtos.UserDtoRequest;
+import com.example.gymnotus.controller.dto.user_dtos.UserDtoRequestPut;
+import com.example.gymnotus.controller.dto.user_dtos.UserDtoResponse;
+import com.example.gymnotus.controller.mapper.user_mapper.UserDtoMapper;
 import com.example.gymnotus.model.User;
 import com.example.gymnotus.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,38 +20,24 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/users/{id}")
-    public UserDtoResponse getUser(@PathVariable Long id){
+    public UserDtoResponse getUser(@PathVariable Long id) {
         User user = userService.getUser(id);
-        return new UserDtoResponse(user.getId(),
-                user.getUsername(),
-                user.getGenderType(),
-                user.getBirthDate(),
-                user.getHeight(),
-                user.getWeight(),
-                user.getCreated());
+        return UserDtoMapper.mapUserToResponseDto(user);
     }
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
-    public User addUser(@Valid @RequestBody UserDtoRequest userDtoRequest) {
-        User user = new User();
-        user.setUsername(userDtoRequest.username());
-        user.setGenderType(userDtoRequest.genderType());
-        user.setBirthDate(userDtoRequest.birthDate());
-        user.setHeight(userDtoRequest.height());
-        user.setWeight(userDtoRequest.weight());
-        user.setCreated(userDtoRequest.created());
-        return userService.addUser(user);
+    public UserDtoResponse addUser(@Valid @RequestBody UserDtoRequest userDtoRequest) {
+        User user = UserDtoMapper.mapRequestDtoToUser(userDtoRequest);
+        User userFromDb = userService.addUser(user);
+        return UserDtoMapper.mapUserToResponseDto(userFromDb);
     }
 
     @PutMapping("/users/{id}")
-    public User editUser(@PathVariable Long id, @Valid @RequestBody UserDtoRequestForPut userDtoRequestForPut) {
-        User user = new User();
-        user.setGenderType(userDtoRequestForPut.genderType());
-        user.setBirthDate(userDtoRequestForPut.birthDate());
-        user.setHeight(userDtoRequestForPut.height());
-        user.setWeight(userDtoRequestForPut.weight());
-        return userService.editUser(id, user);
+    public UserDtoResponse editUser(@PathVariable Long id, @RequestBody UserDtoRequestPut userDtoRequestPut) {
+        User user = UserDtoMapper.mapPutRequestDtoToUser(userDtoRequestPut);
+        User userFromDb = userService.editUser(id, user);
+        return UserDtoMapper.mapUserToResponseDto(userFromDb);
     }
 
     @DeleteMapping("/users/{id}")

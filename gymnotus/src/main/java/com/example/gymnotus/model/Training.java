@@ -14,11 +14,11 @@ import java.util.List;
 public class Training {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    private long userId;
+    private Long id;
+    private Long userId;
     private String name;
     private TrainingType trainingType;
-    private Date created;
+    private Date date;
     @OneToMany
     @JoinColumn(name = "trainingId", updatable = false, insertable = false)
     private List<Strength> strengthTrainings;

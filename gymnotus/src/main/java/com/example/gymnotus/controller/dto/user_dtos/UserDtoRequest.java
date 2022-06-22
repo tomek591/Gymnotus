@@ -1,4 +1,4 @@
-package com.example.gymnotus.controller.dto;
+package com.example.gymnotus.controller.dto.user_dtos;
 
 import com.example.gymnotus.enums.GenderType;
 
