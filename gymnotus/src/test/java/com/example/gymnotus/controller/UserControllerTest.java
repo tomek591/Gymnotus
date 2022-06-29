@@ -112,7 +112,7 @@ class UserControllerTest {
         newUser.setHeight(180.0);
         newUser.setWeight(100.0);
 
-        MvcResult mvcResult = mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newUser)))
                 .andExpect(status().isBadRequest())
                 .andDo(print())
@@ -128,7 +128,7 @@ class UserControllerTest {
         newUser.setHeight(180.0);
         newUser.setWeight(100.0);
 
-        MvcResult mvcResult = mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newUser)))
                 .andExpect(status().isBadRequest())
                 .andDo(print())
@@ -143,7 +143,7 @@ class UserControllerTest {
         newUser.setHeight(180.0);
         newUser.setWeight(100.0);
 
-        MvcResult mvcResult = mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newUser)))
                 .andExpect(status().isBadRequest())
                 .andDo(print())
@@ -231,7 +231,7 @@ class UserControllerTest {
         newUser.setWeight(100.0);
         userRepository.save(newUser);
 
-        MvcResult mvcResult = mockMvc.perform(delete("/users/{id}", newUser.getId()))
+        mockMvc.perform(delete("/users/{id}", newUser.getId()))
                 .andDo(print())
                 .andExpect(status().isNoContent())
                 .andReturn();

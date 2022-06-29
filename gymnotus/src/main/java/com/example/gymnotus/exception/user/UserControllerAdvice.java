@@ -1,4 +1,4 @@
-package com.example.gymnotus.exception;
+package com.example.gymnotus.exception.user;
 
 import com.example.gymnotus.controller.UserController;
 import org.springframework.http.HttpStatus;

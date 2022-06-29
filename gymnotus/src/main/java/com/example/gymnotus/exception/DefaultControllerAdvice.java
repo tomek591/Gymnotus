@@ -1,5 +1,6 @@
 package com.example.gymnotus.exception;
 
+import com.example.gymnotus.controller.TrainingController;
 import com.example.gymnotus.controller.UserController;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -10,7 +11,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.util.NoSuchElementException;
 
-@ControllerAdvice(assignableTypes = UserController.class)
+@ControllerAdvice(assignableTypes = {UserController.class, TrainingController.class})
 public class DefaultControllerAdvice {
 
     @ExceptionHandler({NoSuchElementException.class})
