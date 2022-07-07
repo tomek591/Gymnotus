@@ -7,6 +7,8 @@ import com.example.gymnotus.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+
 @Service
 @RequiredArgsConstructor
 public class TrainingService {
@@ -21,5 +23,18 @@ public class TrainingService {
             return trainingRepository.save(training);
         }
         throw new UserWithThisIdNotExistsException();
+    }
+
+    @Transactional
+    public Training editTraining(Long id, Training training) {
+        Training trainingFromDb = trainingRepository.findById(id)
+                        .orElseThrow();
+        if(training.getName() != null) {
+            trainingFromDb.setName(training.getName());
+        }
+        if(training.getDate() != null) {
+            trainingFromDb.setDate(training.getDate());
+        }
+        return trainingFromDb;
     }
 }

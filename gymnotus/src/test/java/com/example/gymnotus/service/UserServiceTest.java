@@ -92,7 +92,7 @@ class UserServiceTest {
         user.setWeight(100.0);
 
         when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
-        Assertions.assertThrows(NoSuchElementException.class, () -> userService.getUser(1L));
+        Assertions.assertThrows(NoSuchElementException.class, () -> userService.editUser(1L, user));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.example.gymnotus.controller;
 
+import com.example.gymnotus.controller.dto.training_dtos.TrainingDtoPutRequest;
 import com.example.gymnotus.enums.TrainingType;
 import com.example.gymnotus.exception.training.UserWithThisIdNotExistsException;
 import com.example.gymnotus.model.Training;
@@ -22,10 +23,12 @@ import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -171,5 +174,71 @@ class TrainingControllerTest {
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof HttpMessageNotReadableException))
                 .andDo(print())
                 .andReturn();
+    }
+
+    @Test
+    @Transactional
+    void updateTraining_whenCorrectRequest_then201() throws Exception {
+        TrainingDtoPutRequest updatedTrainingBody = new TrainingDtoPutRequest(
+                "FBW A",
+                new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09")
+        );
+
+        MvcResult mvcResult = mockMvc.perform(put("/trainings/3").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedTrainingBody)))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        TrainingDtoPutRequest trainingDtoPutRequest = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), TrainingDtoPutRequest.class);
+        assertThat(trainingDtoPutRequest).isNotNull();
+        assertThat(trainingDtoPutRequest.name()).isEqualTo("FBW A");
+        assertThat(trainingDtoPutRequest.date()).isEqualTo(new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09"));
+    }
+
+    @Test
+    @Transactional
+    void updateTraining_whenRequestWithValue_thenOthersAreNotNull() throws Exception {
+        Map<String,Object> updatedTrainingBody = new HashMap<>();
+        updatedTrainingBody.put("name", "FBW B");
+
+        MvcResult mvcResult = mockMvc.perform(put("/trainings/3").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedTrainingBody)))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        TrainingDtoPutRequest trainingDtoPutRequest = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), TrainingDtoPutRequest.class);
+        assertThat(trainingDtoPutRequest).isNotNull();
+        assertThat(trainingDtoPutRequest.name()).isEqualTo("FBW B");
+        assertThat(trainingDtoPutRequest.date()).isNotNull();
+    }
+
+    @Test
+    @Transactional
+    void updateTraining_whenTryUpdateNotExistsTraining_then404() throws Exception {
+        TrainingDtoPutRequest updatedTrainingBody = new TrainingDtoPutRequest(
+                "FBW A",
+                new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09")
+        );
+
+        mockMvc.perform(put("/trainings/1000000").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedTrainingBody)))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof NoSuchElementException))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    void updateTraining_whenWrongInputsTypeInRequest_then400() throws Exception {
+        Map<String,Object> updatedTrainingBody = new HashMap<>();
+        updatedTrainingBody.put("name", "FBW B");
+        updatedTrainingBody.put("date", "string");
+
+        mockMvc.perform(put("/trainings/1").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedTrainingBody)))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof HttpMessageNotReadableException))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
     }
 }
