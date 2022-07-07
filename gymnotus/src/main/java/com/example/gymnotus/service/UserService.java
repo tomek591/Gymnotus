@@ -25,10 +25,18 @@ public class UserService {
     public User editUser(Long id, User user) {
             User userFromDb  = userRepository.findById(id)
                     .orElseThrow();
-            userFromDb.setGenderType(user.getGenderType());
-            userFromDb.setBirthDate(user.getBirthDate());
-            userFromDb.setHeight(user.getHeight());
-            userFromDb.setWeight(user.getWeight());
+            if(user.getGenderType() != null) {
+                userFromDb.setGenderType(user.getGenderType());
+            }
+            if(user.getBirthDate() != null) {
+                userFromDb.setBirthDate(user.getBirthDate());
+            }
+            if(user.getHeight() != null) {
+                userFromDb.setHeight(user.getHeight());
+            }
+            if(user.getWeight() != null) {
+                userFromDb.setWeight(user.getWeight());
+            }
             return userFromDb;
     }
 

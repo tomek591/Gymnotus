@@ -1,7 +1,7 @@
 package com.example.gymnotus.controller.mapper.user_mapper;
 
 import com.example.gymnotus.controller.dto.user_dtos.UserDtoRequest;
-import com.example.gymnotus.controller.dto.user_dtos.UserDtoRequestPut;
+import com.example.gymnotus.controller.dto.user_dtos.UserDtoPutRequest;
 import com.example.gymnotus.controller.dto.user_dtos.UserDtoResponse;
 import com.example.gymnotus.model.User;
 
@@ -29,7 +29,7 @@ public class UserDtoMapper {
         return user;
     }
 
-    public static User mapPutRequestDtoToUser(UserDtoRequestPut userDtoRequestPut) {
+    public static User mapPutRequestDtoToUser(UserDtoPutRequest userDtoRequestPut) {
         User user = new User();
         user.setGenderType(userDtoRequestPut.genderType());
         user.setBirthDate(userDtoRequestPut.birthDate());

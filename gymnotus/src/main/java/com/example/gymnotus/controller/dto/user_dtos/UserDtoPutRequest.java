@@ -4,7 +4,7 @@ import com.example.gymnotus.enums.GenderType;
 
 import java.util.Date;
 
-public record UserDtoRequestPut(GenderType genderType,
+public record UserDtoPutRequest(GenderType genderType,
                                 Date birthDate,
                                 Double height,
                                 Double weight) {

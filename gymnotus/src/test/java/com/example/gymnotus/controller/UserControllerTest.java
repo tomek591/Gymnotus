@@ -1,6 +1,6 @@
 package com.example.gymnotus.controller;
 
-import com.example.gymnotus.controller.dto.user_dtos.UserDtoRequestPut;
+import com.example.gymnotus.controller.dto.user_dtos.UserDtoPutRequest;
 import com.example.gymnotus.enums.GenderType;
 import com.example.gymnotus.model.User;
 import com.example.gymnotus.repository.UserRepository;
@@ -10,9 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.transaction.Transactional;
@@ -20,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -67,16 +71,13 @@ class UserControllerTest {
         assertThat(user.getWeight()).isEqualTo(100.0);
     }
 
-
-
-    @Test
-    void getUser_whenPathVariableTypeIsNoteCorrect_then400() throws Exception {
-        mockMvc.perform(get("/users/anyString")).andExpect(status().isBadRequest());
-    }
-
     @Test
     void getUser_whenIdNotExistsInDb_then404() throws Exception {
-        mockMvc.perform(get("/users/100000000")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/users/100000000"))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof NoSuchElementException))
+                .andReturn();
     }
 
     @Test
@@ -115,6 +116,7 @@ class UserControllerTest {
         mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newUser)))
                 .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodArgumentNotValidException))
                 .andDo(print())
                 .andReturn();
     }
@@ -131,6 +133,7 @@ class UserControllerTest {
         mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newUser)))
                 .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodArgumentNotValidException))
                 .andDo(print())
                 .andReturn();
     }
@@ -146,6 +149,7 @@ class UserControllerTest {
         mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newUser)))
                 .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof DataIntegrityViolationException))
                 .andDo(print())
                 .andReturn();
     }
@@ -167,7 +171,7 @@ class UserControllerTest {
     @Test
     @Transactional
     void updateUser_whenCorrectRequest_then200() throws Exception {
-        UserDtoRequestPut updatedUser = new UserDtoRequestPut(
+        UserDtoPutRequest updatedUser = new UserDtoPutRequest(
                 GenderType.MALE,
                 new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09"),
                 180.0,
@@ -176,11 +180,11 @@ class UserControllerTest {
 
         MvcResult mvcResult = mockMvc.perform(put("/users/1").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedUser)))
-                //.andExpect(status().isOk())
+                .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
 
-        UserDtoRequestPut userDtoRequestPut = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), UserDtoRequestPut.class);
+        UserDtoPutRequest userDtoRequestPut = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), UserDtoPutRequest.class);
 
         assertThat(userDtoRequestPut).isNotNull();
         assertThat(userDtoRequestPut.genderType()).isEqualTo(GenderType.MALE);
@@ -191,16 +195,36 @@ class UserControllerTest {
 
     @Test
     @Transactional
+    void updateUser_whenRequestWithOneValue_thenOthersAreNotNull() throws Exception {
+        Map<String,Object> body = new HashMap<>();
+        body.put("genderType", "FEMALE");
+
+
+        MvcResult mvcResult = mockMvc.perform(put("/users/1").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        UserDtoPutRequest userDtoRequestPut = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), UserDtoPutRequest.class);
+
+        assertThat(userDtoRequestPut).isNotNull();
+        assertThat(userDtoRequestPut.genderType()).isEqualTo(GenderType.FEMALE);
+        assertThat(userDtoRequestPut.weight()).isEqualTo(110.0);
+        assertThat(userDtoRequestPut.height()).isEqualTo(170.0);
+    }
+
+    @Test
+    @Transactional
     void updateUser_whenTryUpdateNotExistsUser_then404() throws Exception {
         Map<String,Object> body = new HashMap<>();
-        body.put("id", "1000000");
-        body.put("username", "test123");
         body.put("genderType", "FEMALE");
         body.put("height","170.0");
         body.put("weight","110.0");
 
         mockMvc.perform(put("/users/1000000").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof  NoSuchElementException))
                 .andExpect(status().isNotFound())
                 .andDo(print());
     }
@@ -208,14 +232,13 @@ class UserControllerTest {
     @Test
     void updateUser_whenWrongInputsTypeInRequest_then400() throws Exception {
         Map<String,Object> body = new HashMap<>();
-        body.put("id", "1");
-        body.put("username", "test123");
         body.put("genderType", "Female");
         body.put("height","170");
         body.put("weight","110");
 
         mockMvc.perform(put("/users/1").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof HttpMessageNotReadableException))
                 .andExpect(status().isBadRequest())
                 .andDo(print());
     }

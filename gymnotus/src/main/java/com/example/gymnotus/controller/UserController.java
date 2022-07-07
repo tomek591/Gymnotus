@@ -1,7 +1,7 @@
 package com.example.gymnotus.controller;
 
 import com.example.gymnotus.controller.dto.user_dtos.UserDtoRequest;
-import com.example.gymnotus.controller.dto.user_dtos.UserDtoRequestPut;
+import com.example.gymnotus.controller.dto.user_dtos.UserDtoPutRequest;
 import com.example.gymnotus.controller.dto.user_dtos.UserDtoResponse;
 import com.example.gymnotus.controller.mapper.user_mapper.UserDtoMapper;
 import com.example.gymnotus.model.User;
@@ -34,7 +34,7 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    public UserDtoResponse editUser(@PathVariable Long id, @RequestBody UserDtoRequestPut userDtoRequestPut) {
+    public UserDtoResponse editUser(@PathVariable Long id, @RequestBody UserDtoPutRequest userDtoRequestPut) {
         User user = UserDtoMapper.mapPutRequestDtoToUser(userDtoRequestPut);
         User userFromDb = userService.editUser(id, user);
         return UserDtoMapper.mapUserToResponseDto(userFromDb);
