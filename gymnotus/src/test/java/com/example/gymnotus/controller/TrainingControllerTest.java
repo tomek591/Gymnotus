@@ -27,8 +27,7 @@ import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -240,5 +239,26 @@ class TrainingControllerTest {
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof HttpMessageNotReadableException))
                 .andExpect(status().isBadRequest())
                 .andDo(print());
+    }
+
+    @Test
+    @Transactional
+    void deleteTraining_whenCorrectRequest_then204() throws Exception {
+        Training newTraining = new Training();
+        newTraining.setUserId(10L);
+        newTraining.setTrainingType(TrainingType.STRENGTH);
+        newTraining.setName("FBW");
+        newTraining.setDate(new SimpleDateFormat("yyyy-MM-dd").parse("2017-09-09"));
+        trainingRepository.save(newTraining);
+
+        mockMvc.perform(delete("/trainings/{id}", newTraining.getId()))
+                .andDo(print())
+                .andExpect(status().isNoContent())
+                .andReturn();
+    }
+
+    @Test
+    void deleteTraining_whenIdNotExistsInDb_then404() throws Exception {
+        mockMvc.perform(delete("/trainings/100000000")).andExpect(status().isNotFound());
     }
 }

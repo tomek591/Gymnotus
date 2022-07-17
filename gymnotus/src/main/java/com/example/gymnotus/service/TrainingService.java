@@ -37,4 +37,8 @@ public class TrainingService {
         }
         return trainingFromDb;
     }
+
+    public void deleteTraining(Long id) {
+        trainingRepository.deleteById(id);
+    }
 }

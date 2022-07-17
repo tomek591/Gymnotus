@@ -35,4 +35,9 @@ public class TrainingController {
         return TrainingDtoMapper.mapTrainingToTrainingDto(trainingFromDb);
     }
 
+    @DeleteMapping("/trainings/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteTraining(@PathVariable Long id) {
+        trainingService.deleteTraining(id);
+    }
 }

@@ -86,4 +86,12 @@ class TrainingServiceTest {
         when(trainingRepository.findById(newTraining.getId())).thenReturn(Optional.empty());
         Assertions.assertThrows(NoSuchElementException.class, () -> trainingService.editTraining(1L, newTraining));
     }
+
+    @Test
+    void deleteTraining_correctCase_shouldDelete() {
+        Training training = new Training();
+        training.setId(1L);
+        trainingService.deleteTraining(training.getId());
+        verify(trainingRepository, times(1)).deleteById(training.getId());
+    }
 }
